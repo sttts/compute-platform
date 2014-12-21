@@ -1,0 +1,15 @@
+description "logspout container"
+author "Dr. Stefan Schimanski"
+start on filesystem and started docker
+stop on runlevel [!2345]
+respawn
+script
+	/usr/bin/docker rm logspout || true
+	trap "docker stop logspout; docker rm logspout" INT TERM
+    /usr/bin/docker run \
+		-d -h {{inventory_hostname}} \
+		-v /var/run/docker.sock:/tmp/docker.sock \
+		--name logspout \
+		teamwire/logspout syslog://install:42186
+	/usr/bin/docker start -a logspout
+end script

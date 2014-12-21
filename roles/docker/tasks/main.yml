@@ -1,0 +1,35 @@
+- apt_key: id=A88D21E9 keyserver=hkp://keyserver.ubuntu.com:80 state=present
+- apt_repository: repo='deb http://get.docker.io/ubuntu docker main' state=present
+- apt: pkg=lxc-docker state=present
+- apt: pkg=python-pip state=present
+- pip: name=docker-py
+
+# needed for Docker plugin in Jenkins:
+- name: Listen for docker on localhost and point dns to local dnsmasq
+  action: lineinfile dest=/etc/default/docker regexp=^#?DOCKER_OPTS=.* line='DOCKER_OPTS="--ip={{private_ip}} -H 127.0.0.1:4243 -H unix:///var/run/docker.sock --dns {{private_ip}}"'
+  notify: restart docker
+- meta: flush_handlers
+
+# install logspout to send docker log messages to fluentd
+#- docker_pull: repo=teamwire/logspout
+#  notify: restart logspout
+#- name: install logspout upstart job to send docker logs to fluentd
+#  template: src=logspout.conf.j2 dest=/etc/init/logspout.conf
+#  notify: restart logspout
+#- service: name=logspout state=started enabled=true
+
+# start registrator to register every service in consul
+- docker_pull: repo=progrium/registrator
+  notify: restart registrator
+- name: install registrator upstart job
+  template: src=registrator.conf.j2 dest=/etc/init/registrator.conf
+  notify: restart registrator
+- service: name=registrator state=started enabled=true
+
+# install cron-job to delete old containers and images
+- copy: src=docker-cleanup dest=/usr/local/sbin/docker-cleanup mode=0755
+- name: install cronjob to call /usr/local/sbin/docker-cleanup daily
+  cron: name=docker-cleanup special_time=daily job=/usr/local/sbin/docker-cleanup
+
+# install docker-enter
+- copy: src=docker-enter dest=/usr/local/bin mode=0755

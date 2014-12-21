@@ -1,0 +1,15 @@
+description "registrator container"
+author "Dr. Stefan Schimanski"
+start on filesystem and started docker and started consul
+stop on runlevel [!2345]
+respawn
+script
+	/usr/bin/docker rm registrator || true
+	trap "docker stop registrator; docker rm registrator" INT TERM
+	/usr/bin/docker run \
+		-d -h {{inventory_hostname}} \
+		-v /var/run/docker.sock:/tmp/docker.sock \
+		--name registrator \
+		progrium/registrator consul://{{private_ip}}:8500
+	/usr/bin/docker start -a registrator
+end script

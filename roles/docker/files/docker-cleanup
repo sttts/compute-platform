@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# clean up containers > 24h old
+# taken from: https://forums.docker.com/t/tip-cleaning-up-old-containers/122
+docker inspect -f '{{.Id}},{{.State.Running}},{{.State.FinishedAt}}' $(docker ps -qa) | \
+  awk -F, 'BEGIN { TIME=strftime("%FT%T.000000000Z",systime()-60*60*24); } $2=="false" && $3 < TIME {print $1;}' | \
+  while read F; do docker rm $F >/dev/null || true; done
+
+# remove temporary built images
+docker images -f dangling=true --no-trunc | egrep '^<none>' | awk '{print $3}' | while read F; do docker rmi $F >/dev/null || true; done
