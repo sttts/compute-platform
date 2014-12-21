@@ -1,0 +1,26 @@
+- apt_repository: repo='ppa:bcandrea/consul'
+- apt: pkg={{item}}
+  with_items:
+  - consul
+  - consul-web-ui
+- name: bind consul on private_ip
+  lineinfile: dest=/etc/default/consul regexp="BIND=" line="BIND={{private_ip}}"
+  notify: restart consul
+- name: start consul in server mode
+  copy: dest=/etc/consul.d/10-server.json content='{"server":true}'
+  notify: restart consul
+  when: consul_role == "server"
+- name: disable server mode
+  file: name=/etc/consul.d/10-server.json state=absent
+  notify: restart consul
+  when: consul_role != "server"
+- service: name=consul state=started enabled=yes
+- meta: flush_handlers
+- name: join cluster in client mode
+  shell: consul join {%for host in groups['mesos_masters']%} {%if host != inventory_hostname%}{{host}}{%endif%}{%endfor%}
+  when: consul_role != "server"
+
+# redirect dns to consul
+- name: add consul forwarding to dnsmasq 
+  copy: content="server=/consul/127.0.0.1#8600" dest=/etc/dnsmasq.d/10-consul
+  notify: restart dnsmasq
