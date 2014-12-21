@@ -1,0 +1,32 @@
+- name: reload dnsmasq
+  shell: killall -HUP dnsmaq || true
+
+- name: restart dnsmasq
+  service: name=dnsmasq state=restarted
+
+- name: start private LAN
+  shell: ifup {{ private_netdev | default('eth1') }}
+
+- name: reload ganglia-monitor
+  service: name=ganglia-monitor state=reloaded
+
+- name: reload sshd
+  service: name=ssh state=reloaded
+
+- name: rebuild postfix passwd map
+  command: postmap /etc/postfix/sasl/passwd
+
+- name: rebuild postfix generic map
+  command: postmap /etc/postfix/generic
+
+- name: restart postfix
+  service: name=postfix state=restarted
+
+- name: update timezone
+  command: dpkg-reconfigure --frontend noninteractive tzdata
+
+- name: restart ntp
+  service: name=ntp state=restarted
+
+- name: restart rsyslog
+  service: name=rsyslog state=restarted

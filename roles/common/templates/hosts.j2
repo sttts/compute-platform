@@ -1,0 +1,5 @@
+127.0.0.1 localhost
+{% for host in groups['all'] %}
+{{ hostvars[host]['private_ip'] }} {{ hostvars[host]['inventory_hostname'] }} {{ hostvars[host]['inventory_hostname'] }}.teamwire.eu {{ hostvars[host]['host_aliases'] | default('') }} {% if host == inventory_hostname %}host host.{{ domain }}{% endif %}
+
+{% endfor %}

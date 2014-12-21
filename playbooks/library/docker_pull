@@ -1,0 +1,108 @@
+#!/usr/bin/python
+# vim:fileencoding=utf-8
+
+DOCUMENTATION = """
+---
+"""
+
+EXAMPLES = """
+"""
+
+from hashlib import md5
+
+
+class DockerPuller(object):
+
+    def __init__(self, module):
+        self.module = module
+        self.repo = module.params['repo']
+        self.tag = module.params['tag']
+
+    def pull_repo(self, docker='docker'):
+        checksum = self._get_images_checksum(docker)
+        cmd = [self._docker(docker), 'pull']
+
+        repo = self.repo
+        if self.tag:
+            repo += ':' + self.tag
+
+        cmd += [repo]
+
+        rc, out, err = self._run(cmd)
+
+        if rc is not None and rc != 0:
+            self._fail(err, rc)
+
+        if out.strip().startswith('Usage:'):
+            self._fail(
+                ('Got usage output for cmd=%r:\n' % (cmd,)) + out + err, rc
+            )
+
+        return (
+            (rc, out, err),
+            self._get_images_checksum(docker) != checksum
+        )
+
+    def _get_images_checksum(self, docker='docker'):
+        cmd = [self._docker(docker), 'images', '-q']
+        rc, out, err = self._run(cmd)
+
+        if rc is not None and rc != 0:
+            self._fail(err, rc)
+
+        return _md5sum(out.strip())
+
+    def _run(self, cmd):
+        return self.module.run_command(cmd)
+
+    def _docker(self, docker):
+        return self.module.get_bin_path(docker, True)
+
+    def _fail(self, err, rc):
+        self.module.fail_json(
+            repo=self.repo, tag=self.tag, msg=err, rc=rc
+        )
+
+
+def _md5sum(string):
+    return md5(string).hexdigest()
+
+
+def main():
+    module = AnsibleModule(
+        argument_spec=dict(
+            state=dict(default='present', choices=['present']),
+            repo=dict(required=True),
+            tag=dict(default='', required=False),
+        ),
+        supports_check_mode=True
+    )
+
+    puller = DockerPuller(module)
+
+    rc = None
+    out = ''
+    err = ''
+    result = {}
+
+    if module.check_mode:
+        module.exit_json(changed=False)
+
+    (rc, out, err), changed = puller.pull_repo()
+
+    if rc is None:
+        result['changed'] = False
+    else:
+        result['changed'] = changed
+
+    if out:
+        result['stdout'] = out
+    if err:
+        result['stderr'] = err
+
+    module.exit_json(**result)
+
+
+# include magic from lib/ansible/module_common.py
+#<<INCLUDE_ANSIBLE_MODULE_COMMON>>
+main()

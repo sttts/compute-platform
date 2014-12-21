@@ -1,0 +1,118 @@
+# install public ssh key
+- name: install SSH keys
+  copy: dest=/root/.ssh/authorized_keys mode=600 content={{root_authorized_keys}}
+
+# network config
+- hostname: name={{ inventory_hostname }}
+
+- name: Load network interfaces from /etc/network/interfaces.d
+  action: lineinfile dest=/etc/network/interfaces line="source-directory interfaces.d" state=present insertbefore=BOF
+
+- name: Configure private network interface
+  template: src=private_lan.j2 dest=/etc/network/interfaces.d/private_lan
+  notify: start private LAN
+
+# setup dns with local dnsmasq
+- apt: pkg=dnsmasq
+- copy: src=resolv.conf dest=/etc/resolv.conf
+- name: add google 8.8.8.8 server to dnsmasq
+  copy: content="server=8.8.8.8" dest=/etc/dnsmasq.d/20-google
+  notify: restart dnsmasq
+- name: add google 8.8.8.4 server to dnsmasq
+  copy: content="server=8.8.8.4" dest=/etc/dnsmasq.d/21-google
+  notify: restart dnsmasq
+- name: make dnsmasq ignore resolvconf to find upstream servers
+  lineinfile: name=/etc/default/dnsmasq regexp="IGNORE_RESOLVCONF=" line="IGNORE_RESOLVCONF=yes"
+  notify: restart dnsmasq
+- service: name=dnsmasq state=started enabled=true
+
+- name: Create the hosts file for all machines
+  template: src=hosts.j2 dest=/etc/hosts
+  notify: reload dnsmasq
+
+# install ntp and set timezone to UTC
+- name: set timezone to UTC
+  copy: content='UTC' dest=/etc/timezone
+  notify: update timezone
+- template: src=ntp.conf.j2 dest=/etc/ntp.conf
+  notify: restart ntp
+- apt: pkg=ntp
+- service: name=ntp state=started enabled=true
+
+# do security upgrades
+- name: Install unattended-upgrades
+  action: apt pkg={{item}} state=present
+  with_items:
+  - unattended-upgrades
+  - update-notifier-common
+- name: Make sure unattended-upgrades only installs from $ubuntu_release-security
+  lineinfile: dest=/etc/apt/apt.conf.d/50unattended-upgrades regexp="$ubuntu_release-updates" state=absent
+- name: Mail root on unattended-upgrades
+  lineinfile: dest=/etc/apt/apt.conf.d/50unattended-upgrades regexp=Unattended-Upgrade::Mail line='Unattended-Upgrade::Mail "root";'
+- name: Set unattended-upgrade period
+  lineinfile: dest=/etc/apt/apt.conf.d/10periodic regexp=APT::Periodic::Unattended-Upgrade line='APT::Periodic::Unattended-Upgrade "1";'
+- name: Set apt-get cleanup period
+  lineinfile: dest=/etc/apt/apt.conf.d/10periodic regexp=APT::Periodic::AutocleanInterval line='APT::Periodic::AutocleanInterval "7";'
+- name: Set apt-get download period
+  lineinfile: dest=/etc/apt/apt.conf.d/10periodic regexp=APT::Periodic::Download-Upgradeable-Packages line='APT::Periodic::Download-Upgradeable-Packages "1";'
+
+# send mails to Google Apps
+- name: install postfix
+  apt: pkg={{item}}
+  with_items:
+  - postfix
+  - mailutils
+- template: src=postfix-main.cf.j2 dest=/etc/postfix/main.cf
+  notify: restart postfix
+- template: src=postfix-passwd.j2 dest=/etc/postfix/sasl/passwd mode=0600
+  notify: rebuild postfix passwd map
+- template: src=postfix-generic.j2 dest=/etc/postfix/generic
+  notify: rebuild postfix generic map
+- name: give root a speaking name
+  user: name=root comment="root@{{ inventory_hostname }}.{{ domain }}"
+
+# send out logs to install server's fluentd
+- apt: pkg=rsyslog
+#- copy: dest=/etc/rsyslog.d/00-fluentd.conf content="*.* @{{ groups['install_servers'][0] }}:42185"
+#  notify: restart rsyslog
+- service: name=rsyslog state=started enabled=true
+
+#- name: Install logwatch
+#  action: apt pkg=logwatch state=installed
+#- name: Make logwatch mail {{ logwatch_email }} daily
+#  action: lineinfile dest=/etc/cron.daily/00logwatch regexp="^/usr/sbin/logwatch" line="/usr/sbin/logwatch --output mail --mailto {{ logwatch_email }} --detail low" state=present create=yes
+
+# general firewall rules
+- apt: pkg=ufw
+- ufw: rule=allow name=OpenSSH
+- ufw: state=enabled policy=reject
+- ufw: rule=allow src={{ item }}
+  with_items:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+
+- name: disable SSH password root logins
+  action: lineinfile dest=/etc/ssh/sshd_config regexp=^#?PasswordAuthentication line="PasswordAuthentication no"
+  notify: reload sshd
+
+# install ganglia monitor
+#- apt: pkg={{ item }} state=present
+#  with_items:
+#  - ganglia-monitor
+#  - ganglia-monitor-python
+#  - ganglia-modules-linux
+#- service: name=ganglia-monitor state=started enabled=yes
+#- template: src=gmond.conf.j2 dest=/etc/ganglia/gmond.conf
+#  notify: reload ganglia-monitor
+
+# default packages
+- apt: pkg={{item}} state=present
+  with_items:
+  - glances
+  - zile
+  - mc
+  - openjdk-7-jre-headless
+  - sysbench
+  - iotop
+  - sysstat

@@ -1,0 +1,22 @@
+- hosts: all
+  roles:
+  - role: ../roles/common
+    tags: common_role
+
+- hosts: mesos_masters
+  roles:
+  - role: ../roles/consul
+    consul_role: server
+    tags: consul_role
+  serial: "20%"
+
+- hosts: all:!mesos_masters
+  roles:
+  - role: ../roles/consul
+    consul_role: client
+
+- hosts: all
+  roles:
+  - role: ../../roles/docker
+    tags: docker_role
+  serial: "20%"

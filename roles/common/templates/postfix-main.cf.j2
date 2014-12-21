@@ -1,0 +1,34 @@
+smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
+biff = no
+append_dot_mydomain = no
+readme_directory = no
+myhostname = teamwire.eu
+mydomain = teamwire.eu
+relay_domains = teamwire.eu
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+
+# restrictions
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+mydestination = {{ inventory_hostname }}, {{ inventory_hostname }}.teamwire.eu, localhost.localdomain, localhost
+mynetworks = 127.0.0.0/8 172.16.0.0/12 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+
+# SMTP relay
+relayhost = [{{postfix_smarthost}}]:587
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+smtp_use_tls = yes
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+smtp_tls_note_starttls_offer = yes
+tls_random_source = dev:/dev/urandom
+
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl/passwd
+smtp_sasl_security_options = noanonymous
+smtp_sasl_tls_security_options = noanonymous
+smtp_connection_cache_destinations = smtp.gmail.com
+
+default_transport = smtp
+default_destination_concurrency_limit = 5
