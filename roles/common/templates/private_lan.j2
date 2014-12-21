@@ -1,5 +1,5 @@
 auto {{ private_netdev }}
 iface {{ private_netdev }} inet static
 	address {{ private_ip }}
-	netmask 255.255.255.0
+	netmask {{ private_netmask }}
 	broadcast {{ private_broadcast }}

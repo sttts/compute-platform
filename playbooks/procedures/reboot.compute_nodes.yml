@@ -1,0 +1,5 @@
+- hosts: "compute_nodes"
+  serial: 1
+  roles:
+  - role: ../../roles/reboot
+    rolling_reboot_pause: 2

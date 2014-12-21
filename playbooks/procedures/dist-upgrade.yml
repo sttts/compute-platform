@@ -1,0 +1,7 @@
+- hosts: all
+  tasks:
+   - name: updates a server
+     apt: update_cache=yes
+   - name: upgrade a server
+     apt: upgrade=full
+  serial: 1

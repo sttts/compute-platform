@@ -1,0 +1,4 @@
+- hosts: "all"
+  serial: 1
+  roles:
+  - role: ../../roles/reboot

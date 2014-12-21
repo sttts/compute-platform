@@ -5,7 +5,7 @@
   service: name=dnsmasq state=restarted
 
 - name: start private LAN
-  shell: ifup {{ private_netdev | default('eth1') }}
+  shell: ifdown {{ private_netdev }} || true && ifup {{ private_netdev }}
 
 - name: reload ganglia-monitor
   service: name=ganglia-monitor state=reloaded
