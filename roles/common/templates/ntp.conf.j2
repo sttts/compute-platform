@@ -11,14 +11,14 @@ server ptbtime3.ptb.de
 
 {% for host in groups['mesos_masters'] -%}
 {% if host != inventory_hostname %}
-peer {{host}}.teamwire.eu
+peer {{host}}.{{ domain }}
 {% endif -%}
 {% endfor %}
 
 {% else %}
 
 {% for host in groups['mesos_masters'] -%}
-server {{host}}.teamwire.eu
+server {{host}}.{{ domain }}
 {% endfor %}
 
 {% endif %}

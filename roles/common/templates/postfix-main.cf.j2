@@ -2,15 +2,15 @@ smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
 biff = no
 append_dot_mydomain = no
 readme_directory = no
-myhostname = teamwire.eu
-mydomain = teamwire.eu
-relay_domains = teamwire.eu
+myhostname = {{ domain }}
+mydomain = {{ domain }}
+relay_domains = {{ domain }}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 
 # restrictions
 smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
-mydestination = {{ inventory_hostname }}, {{ inventory_hostname }}.teamwire.eu, localhost.localdomain, localhost
+mydestination = {{ inventory_hostname }}, {{ inventory_hostname }}.{{ domain }}, localhost.localdomain, localhost
 mynetworks = 127.0.0.0/8 172.16.0.0/12 [::ffff:127.0.0.0]/104 [::1]/128
 mailbox_size_limit = 0
 recipient_delimiter = +
