@@ -67,7 +67,7 @@
 - name: Set apt-get download period
   lineinfile: dest=/etc/apt/apt.conf.d/10periodic regexp=APT::Periodic::Download-Upgradeable-Packages line='APT::Periodic::Download-Upgradeable-Packages "1";'
 
-# send mails to Google Apps
+# send mails to smarthost
 - name: install postfix
   apt: pkg={{item}}
   with_items:
