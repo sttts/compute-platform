@@ -1,0 +1,22 @@
+- hosts: mesos_masters:!compute_nodes
+  roles:
+  - role: ../../roles/mesos
+    mesos_role: master
+    tags: mesos_masters
+  serial: 1
+
+- hosts: compute_nodes:&mesos_masters
+  roles:
+  - role: ../../roles/mesos
+    mesos_role: master_slave
+    tags: 
+    - mesos_masters
+    - mesos_slaves
+  serial: 1
+
+- hosts: compute_nodes:!mesos_masters
+  roles:
+  - role: ../../roles/mesos
+    mesos_role: slave
+    tags: mesos_slaves
+  serial: 1
