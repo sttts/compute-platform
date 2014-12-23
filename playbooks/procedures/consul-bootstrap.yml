@@ -1,0 +1,13 @@
+- hosts: mesos_masters
+  tasks:
+  - service: name=consul state=stopped
+  - file: name=/var/lib/consul/raft/peers.json state=absent
+#  - lineinfile: 'dest=/etc/default/consul regexp="CONSUL_FLAGS=" line="CONSUL_FLAGS=\"-bootstrap-expect {{ groups["mesos_masters"] | length }}\""'
+  - lineinfile: 'dest=/etc/default/consul regexp="CONSUL_FLAGS=" line="CONSUL_FLAGS=\"-bootstrap\""'
+    when: inventory_hostname == groups['mesos_masters'][0]
+  - service: name=consul state=started
+  - shell: consul join {%for host in groups['mesos_masters']%} {%if host != inventory_hostname%}{{host}}{%endif%}{%endfor%}
+    when: inventory_hostname == groups['mesos_masters'][0]
+  - lineinfile: 'dest=/etc/default/consul regexp="CONSUL_FLAGS=" line="#CONSUL_FLAGS="'
+  - service: name=consul state=restarted
+    when: inventory_hostname == groups['mesos_masters'][0]
