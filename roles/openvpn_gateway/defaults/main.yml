@@ -1,0 +1,6 @@
+openvpn_domain: example.com
+openvpn_search_domains: example.com
+openvpn_route_netdev: eth0:0
+openvpn_route_network: 10.0.0.0 
+openvpn_route_netmask: 10.255.255.255
+openvpn_cidr: 10.0.1.0/24

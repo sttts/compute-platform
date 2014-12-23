@@ -1,0 +1,4 @@
+if $programname == 'marathon' then {
+        action(type="omfile" file="/var/log/marathon.log")
+        stop
+}

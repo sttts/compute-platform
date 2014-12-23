@@ -1,0 +1,9 @@
+- hosts: openvpn_gateways
+  roles:
+  - role: ../roles/openvpn_gateway
+    tags: openvpn_role
+    openvpn_domain: "{{ domain }}"
+    openvpn_search_domains: "service.dc1.consul {{ domain }}"
+    openvpn_route_netmask: "{{ private_netmask }}"
+    openvpn_route_network: "{{ private_network }}"
+    openvpn_cidr: "10.1.0.0/24"

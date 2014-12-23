@@ -1,0 +1,13 @@
+- name: set docker as default mesos-slave containerizer
+  copy: content="docker,mesos" dest=/etc/mesos-slave/containerizers
+  notify: restart mesos-slave
+- name: set executor registration timeout for docker
+  copy: content="5mins" dest=/etc/mesos-slave/executor_registration_timeout
+  notify: restart mesos-slave
+- name: set slave node id
+  copy: content="node_id:{{inventory_hostname}}" dest=/etc/mesos-slave/attributes
+  notify: restart mesos-slave
+- name: enabled mesos-slave task checkpoints
+  copy: dest=/etc/mesos-slave/?checkpoint content=""
+  notify: restart mesos-slave
+- service: name=mesos-slave state=started enabled=true

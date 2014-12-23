@@ -1,0 +1,18 @@
+- name: install mesosphere.io repository key
+  apt_key: keyserver=keyserver.ubuntu.com id=e56151bf state=present
+- name: add mesosphere.io apt testing repository
+  apt_repository: repo="deb http://repos.mesosphere.io/ubuntu trusty-testing main" state=present
+- name: add mesosphere.io apt repository
+  apt_repository: repo="deb http://repos.mesosphere.io/ubuntu trusty main" state=present
+- apt: pkg=mesos
+
+- name: point mesos to all zookeeper instances
+  template: src=zk.j2 dest=/etc/mesos/zk
+  notify: reload mesos-slave
+  notify: reload mesos-master
+- name: set mesos IP to private_ip
+  lineinfile: dest=/etc/default/mesos regexp="IP=" line="IP={{private_ip}}"
+  notify: restart mesos-slave
+  notify: restart mesos-master
+
+- include: "{{mesos_role}}.yml"

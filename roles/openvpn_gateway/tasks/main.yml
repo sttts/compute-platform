@@ -1,0 +1,29 @@
+- apt: pkg=openvpn
+- name: install openvpn server key
+  copy: src=server.key dest=/etc/openvpn/ mode=0600
+  notify: restart openvpn
+- name: install openvpn server certificate
+  copy: src=server.crt dest=/etc/openvpn/ mode=0600
+  notify: restart openvpn
+- name: install openvpn ca certificate
+  copy: src=ca.crt dest=/etc/openvpn/ mode=0600
+  notify: restart openvpn
+- name: install openvpn Diffie Hellmann key
+  copy: src=dh2048.pem dest=/etc/openvpn/ mode=0600
+  notify: restart openvpn
+- template: src=server.conf.j2 dest=/etc/openvpn/server.conf
+  notify: restart openvpn
+- service: name=openvpn state=started enabled=true
+- name: open openvpn port 1194 in the firewall
+  ufw: rule=allow port=1194 proto=tcp
+
+# setup NAT on openvpn subnet
+- name: enable ip forwarding
+  lineinfile: name=/etc/ufw/sysctl.conf regexp="net/ipv4/ip_forward=1" line="net/ipv4/ip_forward=1"
+  notify: restart ufw
+- name: enable ip forwarding in the firewall
+  lineinfile: name=/etc/default/ufw regexp='DEFAULT_FORWARD_POLICY=' line='DEFAULT_FORWARD_POLICY="ACCEPT"'
+  notify: restart ufw
+- name: enable masquerading from openvpn tun device to private lan
+  shell: grep '*nat' /etc/ufw/before.rules || (echo "*nat\n:POSTROUTING ACCEPT - [0:0]\n-A POSTROUTING -s {{openvpn_cidr}} -o {{openvpn_route_netdev}} -j MASQUERADE\nCOMMIT\n" >> /etc/ufw/before.rules; ufw reload)
+  notify: restart ufw

@@ -1,0 +1,24 @@
+- name: restart zookeeper
+  service: name=zookeeper state=restarted
+
+- name: reload mesos-master
+  service: name=mesos-master state=reloaded
+  when: mesos_role == "master" or mesos_role == "master_slave"
+
+- name: restart mesos-master
+  service: name=mesos-master state=restarted
+  when: mesos_role == "master" or mesos_role == "master_slave"
+
+- name: reload mesos-slave
+  service: name=mesos-slave state=reloaded
+  when: mesos_role == "slave" or mesos_role == "master_slave"
+
+- name: restart mesos-slave
+  service: name=mesos-slave state=restarted
+  when: mesos_role == "slave" or mesos_role == "master_slave"
+
+- name: restart marathon
+  service: name=marathon state=restarted
+
+- name: restart rsyslog
+  service: name=rsyslog state=restarted

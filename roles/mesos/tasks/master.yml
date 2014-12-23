@@ -1,0 +1,42 @@
+- apt: pkg=marathon
+
+# setup zookeeper
+- name: set zoo_id to last digit of private IP
+  copy: content="{{zoo_id}}" dest=/etc/zookeeper/conf/myid
+  notify: restart zookeeper
+- template: src=zoo.cfg.j2 dest=/etc/zookeeper/conf/zoo.cfg
+  notify: restart zookeeper
+- service: name=zookeeper state=started enabled=true
+
+# setup mesos-master
+- name: set mesos-master quorum to n/2+1
+  copy: content="{{ (groups['mesos_masters'] | length) // 2 + 1 }}" dest=/etc/mesos-master/quorum
+  notify: reload mesos-master
+- name: set mesos master hostname to public facing host address
+  copy: dest=/etc/mesos-master/hostname content="{{public_host}}"
+  notify: restart mesos-master
+- name: set mesos-master cluster name
+  lineinfile: dest=/etc/default/mesos-master regexp="CLUSTER=" line="CLUSTER={{ mesos_cluster_name }}"
+  notify: restart mesos-master
+- service: name=mesos-master state=started enabled=true
+
+# setup marathon
+- file: dest=/etc/marathon/conf state=directory
+- name: remove marathon master hostname setting
+  file: name=/etc/marathon/conf/hostname state=absent
+  notify: restart marathon
+- name: set marathon port to 5080
+  copy: dest=/etc/marathon/conf/http_port content="5080"
+  notify: restart marathon
+- name: enabled marathon task checkpoints
+  copy: dest=/etc/marathon/conf/?checkpoint content=""
+  notify: restart marathon
+- name: enable marathon http event_subscribers
+  copy: dest=/etc/marathon/conf/event_subscriber content=http_callback
+  notify: restart marathon
+- service: name=marathon state=started enabled=true
+- name: redirect logs to /var/log/marathon.log
+  copy: src=rsyslog-marathon dest=/etc/rsyslog.d/30-marathon.conf
+  notify: restart rsyslog
+- name: logrotate /var/log/marathon.log
+  copy: src=logrotate-marathon dest=/etc/logrotate.d/marathon
