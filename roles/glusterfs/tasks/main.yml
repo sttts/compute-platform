@@ -1,0 +1,3 @@
+- apt_repository: repo='ppa:gluster/glusterfs-3.6'
+
+- include: "{{glusterfs_role}}.yml"

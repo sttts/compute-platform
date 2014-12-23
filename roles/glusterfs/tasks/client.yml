@@ -1,0 +1,12 @@
+- name: Install GlusterFS client
+  apt: name=glusterfs-client
+
+- file: dest={{ glusterfs_mountpoint }} state=directory
+
+- name: Mount GlusterFS from localhost
+  mount: name={{ glusterfs_mountpoint }} src={{ inventory_hostname }}:{{ glusterfs_volume }} fstype=glusterfs opts=defaults,_netdev state=mounted
+  when: inventory_hostname in groups[glusterfs_peer_group]
+
+- name: Mount GlusterFS from {{ glusterfs_volume }}
+  mount: name={{ glusterfs_mountpoint }} src={{ groups[glusterfs_peer_group][0] }}:{{ glusterfs_volume }} fstype=glusterfs opts=defaults,_netdev,backupvolfile-server={{ groups[glusterfs_peer_group][1] }},noatime,nodiratime state=mounted
+  when: not inventory_hostname in groups[glusterfs_peer_group]

@@ -1,0 +1,17 @@
+- hosts: gluster_nodes
+  roles:
+  - role: ../../roles/glusterfs
+    glusterfs_peer_group: gluster_nodes
+    glusterfs_volume: cluster
+    glusterfs_brick_dir: /var/lib/cluster
+    glusterfs_role: server
+    tags: gluster_server_role
+
+- hosts: compute_nodes
+  roles:
+  - role: ../../roles/glusterfs
+    glusterfs_peer_group: gluster_nodes
+    glusterfs_mountpoint: /cluster
+    glusterfs_volume: cluster
+    glusterfs_role: client
+    tags: gluster_client_role

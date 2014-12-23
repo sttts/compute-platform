@@ -1,0 +1,18 @@
+- name: Install GlusterFS server
+  apt: name=glusterfs-server
+
+- name: Create GlusterFS brick
+  file: path={{ glusterfs_brick_dir }} state=directory
+
+- name: Start GlusterFS server
+  service: name=glusterfs-server state=started enabled=true
+
+- name: Configure peers from the first host
+  command: gluster peer probe {{ item }}
+  with_items: groups[glusterfs_peer_group]
+  when: inventory_hostname == "{{ groups[glusterfs_peer_group][0] }}"
+  ignore_errors: yes
+
+- name: Create {{glusterfs_volume}} glusterfs_volume
+  shell: gluster volume info {{glusterfs_volume}} || (gluster volume create {{glusterfs_volume}} replica 3 transport tcp {{ groups[glusterfs_peer_group] | join(':' + glusterfs_brick_dir + ' ') }}:{{glusterfs_brick_dir}} force && gluster volume start {{glusterfs_volume}})
+  when: inventory_hostname == "{{ groups[glusterfs_peer_group][0] }}"

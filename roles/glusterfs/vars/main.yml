@@ -1,0 +1,5 @@
+glusterfs_mountpoint: "/cluster"
+glusterfs_brick_dir: "/var/lib/cluster"
+glusterfs_volume: "cluster"
+glusterfs_peer_group: all
+glusterfs_role: "master_client"
