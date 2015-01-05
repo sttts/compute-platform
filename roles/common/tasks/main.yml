@@ -131,3 +131,8 @@
   - sysbench
   - iotop
   - sysstat
+
+# remove misc
+- apt: pkg={{item}} state=absent
+  with_items:
+  - mlocate # sucks IO heavily
