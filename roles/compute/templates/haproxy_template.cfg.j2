@@ -1,0 +1,88 @@
+global
+	log /dev/log    local0
+	log /dev/log    local1 notice
+
+	daemon
+	maxconn 4096
+	spread-checks 3
+	chroot /var/lib/haproxy
+	user haproxy
+	group haproxy
+	pidfile /var/run/haproxy.pid
+	stats socket /run/haproxy/admin.sock mode 660 level admin
+
+defaults
+	log global
+	mode http
+	
+	option dontlognull
+	option redispatch
+	option log-separate-errors
+	option forceclose
+	option tcp-smart-accept
+	option tcp-smart-connect
+
+	retries 3
+
+	timeout connect 5s
+	timeout client 1m
+	timeout server 1m
+	timeout check 3s
+	timeout queue 3s
+
+	errorfile 400 /etc/haproxy/errors/400.http
+	errorfile 403 /etc/haproxy/errors/403.http
+	errorfile 408 /etc/haproxy/errors/408.http
+	errorfile 500 /etc/haproxy/errors/500.http
+	errorfile 502 /etc/haproxy/errors/502.http
+	errorfile 503 /etc/haproxy/errors/503.http
+	errorfile 504 /etc/haproxy/errors/504.http
+
+frontend http-stats
+	mode http
+	bind *:3380
+
+	stats enable
+	stats uri /
+
+frontend http-in 
+	bind *:80
+
+	tcp-request inspect-delay 5s
+	tcp-request content accept if { req_ssl_hello_type 1 }
+
+	option httplog
+	option forwardfor
+
+	http-request set-header X-Forwarded-Port %[dst_port]
+	http-request add-header X-Forwarded-Proto https if { ssl_fc }
+
+	log-format %ID\ %ci:%cp\ [%t]\ %ft\ %b/%s\ %Tq/%Tw/%Tc/%Tr/%Tt\ %ST\ %B\ %CC\ %CS\ %tsc\ %ac/%fc/%bc/%sc/%rc\ %sq/%bq\ %hr\ %hs\ %{+Q}r\ %sslv\ %sslc
+	unique-id-format %{+X}o\ %ci:%cp_%fi:%fp_%Ts_%rt:%pid
+	unique-id-header X-Request-ID
+
+{% raw %}
+{{ $services := .Services }}{{ range $index, $app := .Apps }}{{ if hasKey $services $app.Id }}{{ $service := getService $services $app.Id }}
+	acl {{ $app.EscapedId }}-aclrule {{ $service.Acl}}
+	use_backend {{ $app.EscapedId }}-cluster if {{ $app.EscapedId }}-aclrule
+{{ end }}{{ end }}
+
+{{ range $index, $app := .Apps }} {{ if $app.Env.BAMBOO_TCP_PORT }}
+listen {{ $app.EscapedId }}-cluster-tcp :{{ $app.Env.BAMBOO_TCP_PORT }}
+        mode tcp
+        option tcplog
+        balance roundrobin
+        {{ range $page, $task := .Tasks }}
+        server {{ $app.EscapedId}}-{{ $task.Host }}-{{ $task.Port }} {{ $task.Host }}:{{ $task.Port }} {{ if $app.HealthCheckPath }} check inter 30000 {{ end }} {{ end }}
+{{ end }}
+{{ if hasKey $services $app.Id }}
+backend {{ $app.EscapedId }}-cluster{{ if $app.HealthCheckPath }}
+	option httpchk GET {{ $app.HealthCheckPath }}
+{{ end }}
+	balance source
+	option httpclose
+	option forwardfor
+{{ range $page, $task := .Tasks }}
+	server {{ $app.EscapedId }}-{{ $task.Host }}-{{ $task.Port }} {{ $task.Host }}:{{ $task.Port }}{{ if $app.HealthCheckPath }} check inter 10000{{ end }}{{ end }}
+{{ end }}{{ end }}
+{% endraw %}

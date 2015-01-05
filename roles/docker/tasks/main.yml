@@ -11,7 +11,7 @@
 - meta: flush_handlers
 
 # install logspout to send docker log messages to fluentd
-#- docker_pull: repo=teamwire/logspout
+#- docker_pull: repo=sttts/logspout
 #  notify: restart logspout
 #- name: install logspout upstart job to send docker logs to fluentd
 #  template: src=logspout.conf.j2 dest=/etc/init/logspout.conf

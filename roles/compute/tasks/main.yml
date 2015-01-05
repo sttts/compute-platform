@@ -1,0 +1,40 @@
+# install bamboo
+- copy: src=bamboo_1.0.0-1_all.deb dest=/tmp
+  notify: install bamboo deb
+  tags: bamboo
+- meta: flush_handlers
+- file: name=/etc/bamboo state=directory
+  tags: bamboo
+- name: install bamboo haproxy config template
+  template: src=haproxy_template.cfg.j2 dest=/etc/bamboo/haproxy_template.cfg mode=0600
+  notify: restart bamboo
+  tags: bamboo
+- name: install bamboo configuration
+  template: src=bamboo-config.json.j2 dest=/etc/bamboo/config.json
+  notify: restart bamboo
+  tags: bamboo
+- service: name=bamboo-server state=started enabled=true
+  tags: bamboo
+- name: link bamboo configuration to /var/bamboo/production.json
+  file: dest=/var/bamboo/production.json src=/etc/bamboo/config.json force=yes state=link
+  notify: restart bamboo
+  tags: bamboo
+
+# install haproxy
+- name: add Debian proxy team haproxy 1.5 repository
+  apt_repository: repo=ppa:vbernat/haproxy-1.5
+- apt: pkg=haproxy
+  notify: restart bamboo
+- service: name=haproxy state=started enabled=true
+- lineinfile: dest=/etc/default/haproxy regexp="^ENABLED=" line="ENABLED=1"
+
+# open firewall ports
+- ufw: rule=allow port=443 proto=tcp
+- ufw: rule=allow port=80 proto=tcp
+
+# install misc
+- apt: pkg={{item}}
+  with_items:
+  - hatop
+  - sysstat
+  - iotop

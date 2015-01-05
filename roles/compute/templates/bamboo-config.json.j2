@@ -1,0 +1,34 @@
+{
+  "Marathon": {
+    "Endpoint": "
+{%- for host in groups['mesos_masters'] -%}
+http://{{ host }}:5080{% if not loop.last %},{% endif %}
+{%- endfor -%}
+"
+  },
+
+  "Bamboo": {
+    "Endpoint": "http://{{private_ip}}:8000",
+    "Zookeeper": {
+      "Host": "
+{%- for host in groups['mesos_masters'] -%}
+{{ host }}:2181{% if not loop.last %},{% endif %}
+{%- endfor -%}
+",
+      "Path": "/bamboo",
+      "ReportingDelay": 5
+    }
+  },
+
+  "HAProxy": {
+    "TemplatePath": "/etc/bamboo/haproxy_template.cfg",
+    "OutputPath": "/etc/haproxy/haproxy.cfg",
+    "ReloadCommand": "read PIDS < /var/run/haproxy.pid; haproxy -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid -sf $PIDS && while ps -p $PIDS; do sleep 0.2; done"
+  },
+
+  "StatsD": {
+    "Enabled": false,
+    "Host": "localhost:8125",
+    "Prefix": "bamboo-server.development."
+  }
+}

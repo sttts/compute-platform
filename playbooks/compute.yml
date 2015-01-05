@@ -1,0 +1,4 @@
+- hosts: compute_nodes
+  roles:
+  - role: ../../roles/compute
+  serial: 1

@@ -10,6 +10,6 @@ script
 		-d -h {{inventory_hostname}} \
 		-v /var/run/docker.sock:/tmp/docker.sock \
 		--name logspout \
-		teamwire/logspout syslog://install:42186
+		sttts/logspout syslog://install:42186
 	/usr/bin/docker start -a logspout
 end script

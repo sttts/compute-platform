@@ -1,0 +1,6 @@
+- name: restart bamboo
+  service: name=bamboo-server state=restarted
+
+- name: install bamboo deb
+  shell: dpkg -i /tmp/bamboo_1.0.0-1_all.deb
+  notify: restart bamboo
