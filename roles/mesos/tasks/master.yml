@@ -28,6 +28,15 @@
 - name: set marathon port to 5080
   copy: dest=/etc/marathon/conf/http_port content="5080"
   notify: restart marathon
+
+- name: set reconciliation_initial_delay to 30sec
+  copy: dest=/etc/marathon/conf/reconciliation_initial_delay content="30000"
+  notify: restart marathon
+
+- name: set reconciliation_interval to 30sec
+  copy: dest=/etc/marathon/conf/reconciliation_interval content="30000"
+  notify: restart marathon
+
 - name: enabled marathon task checkpoints
   copy: dest=/etc/marathon/conf/?checkpoint content=""
   notify: restart marathon
