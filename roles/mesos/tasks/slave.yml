@@ -10,4 +10,7 @@
 - name: enabled mesos-slave task checkpoints
   copy: dest=/etc/mesos-slave/?checkpoint content=""
   notify: restart mesos-slave
+- name: set the mesos task port range
+  copy: dest=/etc/mesos-slave/resources content="ports(*):[{{ mesos_slave_ports | default(["31000-32000"]) | join(',') }}]"
+  notify: restart mesos-slave
 - service: name=mesos-slave state=started enabled=true
