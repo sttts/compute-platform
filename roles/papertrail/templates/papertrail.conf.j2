@@ -1,0 +1,7 @@
+$DefaultNetstreamDriverCAFile /etc/papertrail-bundle.pem # trust these CAs
+$ActionSendStreamDriver gtls # use gtls netstream driver
+$ActionSendStreamDriverMode 1 # require TLS
+$ActionSendStreamDriverAuthMode x509/name # authenticate by hostname
+$ActionSendStreamDriverPermittedPeer *.papertrailapp.com
+
+*.* @{{ papertrail_host }}.papertrailapp.com{% if papertrail_port %}:{{ papertrail_port }}{% endif %}

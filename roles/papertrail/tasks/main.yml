@@ -1,0 +1,4 @@
+- get_url: url=https://papertrailapp.com/tools/papertrail-bundle.pem dest=/etc/papertrail-bundle.pem sha256sum=c03a504397dc45b4fc05f978dbf02129793cbd2a0b64856c2ba1bb49a3b9aacb mode=0644
+- apt: pkg=rsyslog-gnutls
+- template: src=papertrail.conf.j2 dest=/etc/rsyslog.d/10-papertrail.conf
+  notify: restart rsyslog
