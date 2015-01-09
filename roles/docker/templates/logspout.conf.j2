@@ -10,6 +10,6 @@ script
 		-d -h {{inventory_hostname}} \
 		-v /var/run/docker.sock:/tmp/docker.sock \
 		--name logspout \
-		sttts/logspout syslog://install:42186
+		progrium/logspout syslog://172.17.42.1:514
 	/usr/bin/docker start -a logspout
 end script

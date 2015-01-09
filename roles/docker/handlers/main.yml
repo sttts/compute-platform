@@ -6,3 +6,6 @@
 
 - name: restart logspout
   service: name=logspout state=restarted
+
+- name: restart rsyslog
+  service: name=rsyslog state=restarted
