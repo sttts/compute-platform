@@ -10,7 +10,7 @@
   notify: restart docker
 - meta: flush_handlers
 
-# install logspout to send docker log messages to fluentd
+# install logspout to send docker log messages to the local rsyslog
 - name: load udp rsyslog module
   copy: content="$ModLoad imudp\n$UDPServerRun 514\n" dest=/etc/rsyslog.d/00-receive-udp.conf
   notify: restart rsyslog
