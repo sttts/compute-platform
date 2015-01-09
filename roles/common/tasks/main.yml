@@ -27,7 +27,7 @@
   notify: restart dnsmasq
 - name: set nameserver upstreams for dnsmasq
   template: src=nameservers.j2 dest=/etc/dnsmasq.d/20-nameservers
-  notify: restart dnsmasq  
+  notify: restart dnsmasq
 - name: make dnsmasq ignore resolvconf to find upstream servers
   lineinfile: name=/etc/default/dnsmasq regexp="IGNORE_RESOLVCONF=" line="IGNORE_RESOLVCONF=yes"
   notify: restart dnsmasq
