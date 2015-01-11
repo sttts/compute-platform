@@ -38,6 +38,7 @@
   notify: reload dnsmasq
 
 - template: src=resolv.conf.j2 dest=/etc/resolv.conf
+- shell: chattr +i /etc/resolv.conf
 
 - meta: flush_handlers
 
