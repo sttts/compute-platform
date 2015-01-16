@@ -28,7 +28,7 @@ smtp_sasl_auth_enable = yes
 smtp_sasl_password_maps = hash:/etc/postfix/sasl/passwd
 smtp_sasl_security_options = noanonymous
 smtp_sasl_tls_security_options = noanonymous
-smtp_connection_cache_destinations = smtp.gmail.com
+smtp_connection_cache_destinations = {{postfix_smarthost}}
 
 default_transport = smtp
 default_destination_concurrency_limit = 5
