@@ -4,7 +4,7 @@
 - file: dest={{ glusterfs_mountpoint }} state=directory
 
 - name: Mount GlusterFS from localhost
-  mount: name={{ glusterfs_mountpoint }} src={{ inventory_hostname }}:{{ glusterfs_volume }} fstype=glusterfs opts=defaults,_netdev state=mounted
+  mount: name={{ glusterfs_mountpoint }} src={{ inventory_hostname }}:{{ glusterfs_volume }} fstype=glusterfs opts=defaults,_netdev,backupvolfile-server={{ groups[glusterfs_peer_group] | difference([inventory_hostname]) | first }} state=mounted
   when: inventory_hostname in groups[glusterfs_peer_group]
 
 - name: Mount GlusterFS from {{ glusterfs_volume }}
