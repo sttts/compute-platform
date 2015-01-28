@@ -1,0 +1,9 @@
+{
+	"dns_config": {
+		"allow_stale": true,
+		"max_stale": "10s",
+		"service_ttl": {
+			"*": "2s"
+		}
+	}
+}

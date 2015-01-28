@@ -10,6 +10,9 @@
   copy: dest=/etc/consul.d/10-server.json content='{"server":true}'
   notify: restart consul
   when: consul_role == "server"
+- name: allow stale dns replies
+  copy: src=10-dns.json dest=/etc/consul.d/10-dns.json
+  notify: restart consul
 - name: disable server mode
   file: name=/etc/consul.d/10-server.json state=absent
   notify: restart consul
