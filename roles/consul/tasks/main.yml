@@ -25,5 +25,5 @@
 
 # redirect dns to consul
 - name: add consul forwarding to dnsmasq 
-  copy: content="server=/consul/127.0.0.1#8600" dest=/etc/dnsmasq.d/10-consul
+  template: src=10-consul.j2 dest=/etc/dnsmasq.d/10-consul
   notify: restart dnsmasq

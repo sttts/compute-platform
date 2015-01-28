@@ -1,0 +1,5 @@
+server=/consul/127.0.0.1#8600
+{% for host in groups['mesos_masters'] %}
+{% if host != inventory_hostname %}server=/consul/{{ hostvars[host]['private_ip'] }}#8600{% endif %}
+
+{% endfor %}
