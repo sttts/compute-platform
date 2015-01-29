@@ -6,7 +6,7 @@ ca ca.crt
 cert server.crt
 key server.key
 dh dh2048.pem
-server 10.1.0.0 255.255.255.0
+server {{openvpn_client_network}} {{openvpn_client_netmask}}
 ifconfig-pool-persist ipp.txt
 keepalive 10 120
 comp-lzo
