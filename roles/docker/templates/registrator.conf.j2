@@ -10,6 +10,6 @@ script
 		-d -h {{inventory_hostname}} \
 		-v /var/run/docker.sock:/tmp/docker.sock \
 		--name registrator \
-		progrium/registrator consul://{{private_ip}}:8500
+		sttts/registrator -internal consul://{{private_ip}}:8500
 	/usr/bin/docker start -a registrator
 end script

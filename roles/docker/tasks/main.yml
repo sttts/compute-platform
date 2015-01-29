@@ -23,7 +23,7 @@
 - service: name=logspout state=started enabled=true
 
 # start registrator to register every service in consul
-- docker_pull: repo=progrium/registrator
+- docker_pull: repo=sttts/registrator
   notify: restart registrator
 - name: install registrator upstart job
   template: src=registrator.conf.j2 dest=/etc/init/registrator.conf
