@@ -3,6 +3,10 @@
 
 - name: restart dnsmasq
   service: name=dnsmasq state=restarted
+  notify: restart registrator
+
+- name: restart registrator
+  service: name=registrator state=restarted
 
 - name: run resolvconf
   shell: resolvconf -u

@@ -1,11 +1,10 @@
-- apt_repository: repo='ppa:bcandrea/consul'
-- apt: pkg={{item}}
+- apt_repository: repo='ppa:bcandrea/consul' state=absent
+- apt: pkg={{item}} state=absent
   with_items:
   - consul
   - consul-web-ui
-- name: bind consul on private_ip
-  lineinfile: dest=/etc/default/consul regexp="BIND=" line="BIND={{private_ip}}"
-  notify: restart consul
+
+- file: name=/etc/consul state=directory
 - name: start consul in server mode
   copy: dest=/etc/consul.d/10-server.json content='{"server":true}'
   notify: restart consul
@@ -17,6 +16,18 @@
   file: name=/etc/consul.d/10-server.json state=absent
   notify: restart consul
   when: consul_role != "server"
+- name: set data dir to /var/lib/consul
+  copy: 'dest=/etc/consul.d/20-agent.json content={"data_dir":"/var/lib/consul"}'
+  notify: restart consul
+- name: install consul upstart job
+  copy: src=consul.conf dest=/etc/init/consul.conf
+  notify: restart consul
+- name: install consul default
+  template: src=default.j2 dest=/etc/default/consul
+  notify: restart consul
+- name: install consul binary
+  get_url: url=https://s3.amazonaws.com/hc-public/consul/0.5.0rc1/consul_linux_amd64_0.5.0rc1 dest=/usr/local/bin/consul mode=755 sha256sum=7d84fba71cc564fa46fcbea4888393aeb9a63b2ccba36ba3cecb82004c59540e
+  notify: restart consul
 - service: name=consul state=started enabled=yes
 - meta: flush_handlers
 - name: join cluster in client mode
@@ -24,6 +35,7 @@
   when: consul_role != "server"
 
 # redirect dns to consul
-- name: add consul forwarding to dnsmasq 
+- name: add consul forwarding to dnsmasq
   template: src=10-consul.j2 dest=/etc/dnsmasq.d/10-consul
   notify: restart dnsmasq
+
