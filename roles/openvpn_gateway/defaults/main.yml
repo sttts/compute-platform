@@ -1,5 +1,6 @@
 openvpn_domain: example.com
 openvpn_search_domains: example.com
+openvpn_nameserver: "{{ private_ip }}"
 openvpn_route_netdev: eth0:0
 openvpn_route_netmask: "{{ private_netmask }}"
 openvpn_route_network: "{{ private_network }}"
