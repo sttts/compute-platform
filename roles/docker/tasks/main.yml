@@ -6,7 +6,7 @@
 
 # needed for Docker plugin in Jenkins:
 - name: Listen for docker on localhost and point dns to local dnsmasq
-  action: lineinfile dest=/etc/default/docker regexp=^#?DOCKER_OPTS=.* line='DOCKER_OPTS="--ip={{private_ip}} -H 127.0.0.1:4243 -H unix:///var/run/docker.sock --dns {{private_ip}}"'
+  action: lineinfile dest=/etc/default/docker regexp=^#?DOCKER_OPTS=.* line='DOCKER_OPTS="${DOCKER_NETWORK_OPTS:---ip={{private_ip}}} -H 127.0.0.1:4243 -H unix:///var/run/docker.sock --dns {{private_ip}}"'
   notify: restart docker
 - meta: flush_handlers
 
