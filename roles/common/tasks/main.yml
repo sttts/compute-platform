@@ -37,6 +37,7 @@
   template: src=hosts.j2 dest=/etc/hosts
   notify: reload dnsmasq
 
+- shell: chattr -i /etc/resolv.conf
 - template: src=resolv.conf.j2 dest=/etc/resolv.conf
 - shell: chattr +i /etc/resolv.conf
 
