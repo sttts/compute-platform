@@ -1,0 +1,8 @@
+- name: start weave interface
+  shell: ifdown weave || true && ifup weave
+
+- name: restart docker
+  service: name=docker state=restarted
+
+- name: restart weave
+  service: name=weave state=restarted

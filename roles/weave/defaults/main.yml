@@ -1,0 +1,3 @@
+weave_network_width: 8
+weave_cidr: "{{weave_ip}}/{{weave_network_width}}"
+weave_group: "all"

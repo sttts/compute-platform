@@ -1,0 +1,26 @@
+- name: install weave script from github
+  get_url: url=https://raw.githubusercontent.com/sttts/weave/d77e3a4c226ab7803a947927a61da084de5162ca/weave force=yes dest=/usr/local/bin/weave sha256sum=cbd625236ce9e11db70cbf4ed209f2e83ba2d9df8bd34aecc271575ed736ad18 mode=755
+  notify: start weave interface
+- name: setup weave network bridge and interface on boot
+  template: src=interface.j2 dest=/etc/network/interfaces.d/weave
+  notify: start weave interface
+- meta: flush_handlers
+
+- name: setup weave bridge in docker
+  lineinfile: dest=/etc/default/docker regexp=^DOCKER_NETWORK_OPTS=.* insertbefore=^DOCKER_OPTS=.* line='DOCKER_NETWORK_OPTS="--bridge weave --fixed-cidr={{weave_container_cidr}}"'
+  notify: restart docker
+- meta: flush_handlers
+
+- name: download weave router
+  shell: /usr/local/bin/weave setup
+- name: install weave router upstart script
+  copy: src=weave.conf dest=/etc/init/weave.conf
+  notify: restart weave
+- name: start weave router
+  service: name=weave state=started
+- meta: flush_handlers
+
+- name: connect weave to peers
+  shell: /usr/local/bin/weave connect {{item}} || true
+  when: inventory_hostname != item
+  with_items: groups[weave_group]
