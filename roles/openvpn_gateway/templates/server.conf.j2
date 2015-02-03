@@ -19,4 +19,6 @@ push "dhcp-option DNS {{ openvpn_nameserver }}"
 push "dhcp-option DOMAIN {{ openvpn_domain }}"
 push "dhcp-option DOMAIN-SEARCH {{ openvpn_search_domains }}"
 push "dhcp-option DOMAIN-SEARCH {{ openvpn_domain }}"
-push "route {{ openvpn_route_network }} {{ openvpn_route_netmask }}"
+{% for route in openvpn_route_network %}
+push "route {{ route }} {{ openvpn_route_netmask[loop.index0] }}"
+{% endfor %}
