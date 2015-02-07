@@ -1,0 +1,8 @@
+{
+	{% for host, values in docker_credentials.iteritems() %}
+  	"{{ host }}": {
+    	"auth" : "{{ values['auth'] }}",
+    	"email" : "{{ values['email'] }}"
+   	}{% if not loop.last %},{% endif %}
+   	{% endfor %}
+}
