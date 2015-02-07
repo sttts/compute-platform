@@ -133,6 +133,7 @@
   - sysbench
   - iotop
   - sysstat
+  - redis-tools # needed for health checks of redis
 
 # remove misc
 - apt: pkg={{item}} state=absent
