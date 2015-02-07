@@ -5,7 +5,7 @@
 - pip: name=docker-py
 
 # install docker credential
-- template: src=dockercfg.j2 dest=/root/.dockercfg
+- template: src=dockercfg.j2 dest=/etc/.dockercfg mode=0600
 
 # needed for Docker plugin in Jenkins:
 - name: Listen for docker on localhost and point dns to local dnsmasq
