@@ -1,4 +1,4 @@
 if $programname == 'marathon' then {
-        action(type="omfile" file="/var/log/marathon.log")
+        action(type="omfile" asyncWriting="on" file="/var/log/marathon.log")
         stop
 }
