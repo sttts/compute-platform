@@ -4,3 +4,6 @@
 - name: install bamboo deb
   shell: dpkg -i /tmp/bamboo_1.0.0-1_all.deb
   notify: restart bamboo
+
+- name: reload haproxy
+  service: name=haproxy state=reloaded

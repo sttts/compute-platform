@@ -28,6 +28,18 @@
 - service: name=haproxy state=started enabled=true
 - lineinfile: dest=/etc/default/haproxy regexp="^ENABLED=" line="ENABLED=1"
 
+# install certificates
+- name: install haproxy ssl certificates
+  copy: src=../../../{{item}} dest=/etc/ssl/private/{{item | basename}}
+  with_items: haproxy_certificate_files
+  tags:
+  - ssl
+- file: dest=/etc/ssl/private/default.pem src=/etc/ssl/private/{{ haproxy_certificate_files[0] | basename }} state=link
+  when: (haproxy_certificate_files | length) > 0
+  tags:
+  - ssl
+  notify: reload haproxy
+
 # open firewall ports
 - ufw: rule=allow port=443 proto=tcp
 - ufw: rule=allow port=80 proto=tcp
