@@ -34,6 +34,7 @@
   with_items: haproxy_certificate_files
   tags:
   - ssl
+  notify: reload haproxy
 - file: dest=/etc/ssl/private/default.pem src=/etc/ssl/private/{{ haproxy_certificate_files[0] | basename }} state=link
   when: (haproxy_certificate_files | length) > 0
   tags:
