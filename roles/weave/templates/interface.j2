@@ -1,6 +1,6 @@
 auto weave
 iface weave inet manual
         pre-up /usr/local/bin/weave create-bridge
-        post-up /usr/local/bin/weave expose {{weave_cidr}}
-        pre-down /usr/local/bin/weave hide {{weave_cidr}} && ifconfig weave down
+        post-up ip addr add dev weave {{weave_cidr}}
+        pre-down ifconfig weave down
         post-down brctl delbr weave
