@@ -25,5 +25,5 @@
   lineinfile: name=/etc/default/ufw regexp='DEFAULT_FORWARD_POLICY=' line='DEFAULT_FORWARD_POLICY="ACCEPT"'
   notify: restart ufw
 - name: enable masquerading from openvpn tun device to private lan
-  shell: grep '*nat' /etc/ufw/before.rules || (echo "*nat\n:POSTROUTING ACCEPT - [0:0]\n-A POSTROUTING -s {{openvpn_cidr}} -o {{openvpn_route_netdev}} -j MASQUERADE\nCOMMIT\n" >> /etc/ufw/before.rules; ufw reload)
+  shell: grep '*nat' /etc/ufw/before.rules || (echo "*nat\n:POSTROUTING ACCEPT - [0:0]\n-A POSTROUTING -s {{openvpn_cidr}} ! -o {{openvpn_route_netdev}} -j MASQUERADE\nCOMMIT\n" >> /etc/ufw/before.rules; ufw reload)
   notify: restart ufw
