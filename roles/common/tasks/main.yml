@@ -22,7 +22,7 @@
 - name: remove google 8.8.8.8 server from dnsmasq
   file: dest=/etc/dnsmasq.d/20-google state=absent
   notify: restart dnsmasq
-- name: remove google 8.8.8.4 server from dnsmasq
+- name: remove google 8.8.4.4 server from dnsmasq
   file: dest=/etc/dnsmasq.d/21-google state=absent
   notify: restart dnsmasq
 - name: set nameserver upstreams for dnsmasq
